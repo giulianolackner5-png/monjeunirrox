@@ -3,169 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nirrox Minecraft 2D</title>
+    <title>Nirrox Craft World</title>
     
-    <!-- Code corrigé : Ton image est maintenant l'icône officielle pour ton Chromebook -->
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Nirrox%20Minecraft%22,%22short_name%22:%22Minecraft2D%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23facc56%22,%22icons%22:[{%22src%22:%22https://googleusercontent.com}]}">
+    <!-- Code de l'icône Chromebook réparé avec ton logo intégré en texte sécurisé -->
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Nirrox%20Craft%20World%22,%22short_name%22:%22NirroxCraft%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23facc56%22,%22icons%22:[{%22src%22:%22data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='192' height='192' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23facc56'/><text x='50' y='65' font-family='sans-serif' font-size='32' font-weight='bold' fill='%231a5135' text-anchor='middle'>NC</text></svg>%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22}]}">
 
     <style>
-        body { background: #1a1a1a; color: white; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; }
+        body { background: #111; color: white; font-family: 'Courier New', monospace; text-align: center; margin: 0; padding: 0; overflow: hidden; user-select: none; }
         
-        /* Style du menu d'accueil */
+        /* Menu d'accueil réparé avec fond jaune */
         #menu { 
             position: absolute; width: 100%; height: 100vh; background: #facc56; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;
         }
-        #logo { width: 300px; height: 300px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 20px; }
-        .btn-jouer { background: #1a5135; color: white; border: none; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 10px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .btn-jouer:active { transform: scale(0.95); }
+        #logo-box { width: 280px; height: 280px; background: #facc56; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .logo-text-1 { font-size: 42px; font-weight: bold; color: #1a5135; margin: 0; }
+        .logo-text-2 { font-size: 38px; font-weight: bold; color: #1a5135; margin: 0; letter-spacing: 2px; }
+        .crown { font-size: 50px; margin-bottom: -10px; color: #b38f00; }
+        
+        .btn-jouer { background: #1a5135; color: white; border: none; padding: 15px 50px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.2s; }
+        .btn-jouer:hover { background: #24754d; }
 
-        /* Interface du jeu */
-        #jeu-container { display: none; margin-top: 10px; }
-        canvas { background: #74b9ff; border: 4px solid #1a5135; display: block; margin: 10px auto; }
-        #infos { font-size: 18px; color: #facc56; font-weight: bold; margin-bottom: 5px; }
+        /* Jeu */
+        #jeu-container { display: none; margin-top: 5px; }
+        canvas { background: #54a0ff; border: 4px solid #1a5135; display: block; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        #barre-outils { font-size: 16px; color: #facc56; margin-bottom: 5px; background: #222; padding: 5px; }
+        .active-item { color: #fff; background: #1a5135; padding: 2px 8px; border-radius: 3px; }
     </style>
 </head>
 <body>
 
-    <!-- LE MENU DE DÉMARRAGE -->
+    <!-- MENU PRINCIPAL NIRROX CHANEL -->
     <div id="menu">
-        <img id="logo" src="https://googleusercontent.com" alt="Logo Nirrox Chanel">
-        <button class="btn-jouer" onclick="demarrerJeu()">JOUER</button>
+        <div id="logo-box">
+            <div class="crown">👑</div>
+            <p class="logo-text-1">NiRROX</p>
+            <p class="logo-text-2">CHANEL</p>
+        </div>
+        <button class="btn-jouer" onclick="demarrerJeu()">JOUER À NIRROX CRAFT</button>
     </div>
 
-    <!-- LE JEU -->
+    <!-- ZONE DE JEU -->
     <div id="jeu-container">
-        <div id="infos">Bloc sélectionné : <span id="bloc-actif">TERRE</span> | [Espace] pour changer | Clic pour casser/poser</div>
-        <canvas id="monde" width="800" height="500"></canvas>
+        <div id="barre-outils">
+            [A] Pioche | [Z] Bloc d'Herbe | [E] Bloc de Pierre | Action : <span id="outil-actif" class="active-item">PIOCHE (MINER)</span>
+        </div>
+        <canvas id="monde" width="900" height="525"></canvas>
     </div>
 
     <script>
         const canvas = document.getElementById("monde");
         const ctx = canvas.getContext("2d");
 
-        const TAILLE_BLOC = 25;
-        const COLONNES = canvas.width / TAILLE_BLOC;
-        const LIGNES = canvas.height / TAILLE_BLOC;
+        const TILE = 25;
+        const COLS = canvas.width / TILE;
+        const ROWS = canvas.height / TILE;
 
-        const COULEURS = {
-            0: "#74b9ff", // CIEL
-            1: "#2ecc71", // HERBE
-            2: "#87572b", // TERRE
-            3: "#7f8c8d"  // PIERRE
-        };
-
-        const NOM_BLOCS = ["AIR", "HERBE", "TERRE", "PIERRE"];
-
-        let grille = [];
-        let joueur = { x: 400, y: 100, largeur: 20, hauteur: 22, vitesse: 4, velY: 0, auSol: false };
-        let blocSelectionne = 2;
+        // Blocs originaux de Nirrox Craft
+        const BLOCS = { 0: "#54a0ff", 1: "#10ac84", 2: "#576574", 3: "#222f3e" };
+        const TEXTES = { 0: "AIR", 1: "HERBE", 2: "PIERRE", 3: "FOND" };
+        
+        let map = [];
+        let joueur = { x: 450, y: 100, w: 18, h: 24, vX: 0, vY: 0, auSol: false, vitesse: 4 };
+        let mode = "pioche"; 
+        let blocChoisi = 1;
         let touches = {};
 
         function demarrerJeu() {
             document.getElementById("menu").style.display = "none";
             document.getElementById("jeu-container").style.display = "block";
-            genererMonde();
-            boucleJeu();
+            creerTerrain();
+            setInterval(run, 1000/60);
         }
 
-        function genererMonde() {
-            for (let y = 0; y < LIGNES; y++) {
-                grille[y] = [];
-                for (let x = 0; x < COLONNES; x++) {
-                    if (y < 10) {
-                        grille[y][x] = 0;
-                    } else if (y === 10) {
-                        grille[y][x] = 1;
-                    } else if (y > 10 && y < 15) {
-                        grille[y][x] = 2;
-                    } else {
-                        grille[y][x] = 3;
-                    }
+        function creerTerrain() {
+            for (let y = 0; y < ROWS; y++) {
+                map[y] = [];
+                for (let x = 0; x < COLS; x++) {
+                    if (y < 12) map[y][x] = 0;
+                    else if (y === 12) map[y][x] = 1;
+                    else map[y][x] = 2;
                 }
             }
         }
 
         window.addEventListener("keydown", (e) => {
-            touches[e.key] = true;
-            if (e.key === " ") {
-                blocSelectionne++;
-                if (blocSelectionne > 3) blocSelectionne = 1;
-                document.getElementById("bloc-actif").innerText = NOM_BLOCS[blocSelectionne];
-            }
+            touches[e.key.toLowerCase()] = true;
+            if (e.key.toLowerCase() === "a") { mode = "pioche"; majInterface(); }
+            if (e.key.toLowerCase() === "z") { mode = "pose"; blocChoisi = 1; majInterface(); }
+            if (e.key.toLowerCase() === "e") { mode = "pose"; blocChoisi = 2; majInterface(); }
         });
-        window.addEventListener("keyup", (e) => touches[e.key] = false);
+        window.addEventListener("keyup", (e) => touches[e.key.toLowerCase()] = false);
+
+        function majInterface() {
+            let txt = mode === "pioche" ? "PIOCHE (MINER)" : "POSER (" + TEXTES[blocChoisi] + ")";
+            document.getElementById("outil-actif").innerText = txt;
+        }
 
         canvas.addEventListener("mousedown", (e) => {
             const rect = canvas.getBoundingClientRect();
-            const clicX = e.clientX - rect.left;
-            const clicY = e.clientY - rect.top;
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            const c = Math.floor(clickX / TILE);
+            const r = Math.floor(clickY / TILE);
 
-            const caseX = Math.floor(clicX / TAILLE_BLOC);
-            const caseY = Math.floor(clicY / TAILLE_BLOC);
-
-            if (caseX >= 0 && caseX < COLONNES && caseY >= 0 && caseY < LIGNES) {
-                if (grille[caseY][caseX] === 0) {
-                    grille[caseY][caseX] = blocSelectionne;
-                } else {
-                    grille[caseY][caseX] = 0;
-                }
+            if (c >= 0 && c < COLS && r >= 0 && r < ROWS) {
+                if (mode === "pioche") map[r][c] = 0;
+                else if (mode === "pose" && map[r][c] === 0) map[r][c] = blocChoisi;
             }
         });
 
-        function mettreAJour() {
-            if (touches["ArrowLeft"] || touches["q"]) joueur.x -= joueur.vitesse;
-            if (touches["ArrowRight"] || touches["d"]) joueur.x += joueur.vitesse;
+        function update() {
+            if (touches["arrowleft"] || touches["q"]) joueur.vX = -joueur.vitesse;
+            else if (touches["arrowright"] || touches["d"]) joueur.vX = joueur.vitesse;
+            else joueur.vX = 0;
 
-            joueur.velY += 0.5;
-            joueur.y += joueur.velY;
+            joueur.vY += 0.4; // Gravité terraria
+            joueur.x += joueur.vX;
+            joueur.y += joueur.vY;
             joueur.auSol = false;
 
-            let piedY = Math.floor((joueur.y + joueur.hauteur) / TAILLE_BLOC);
-            let centreX = Math.floor((joueur.x + joueur.largeur / 2) / TAILLE_BLOC);
+            let checkR = Math.floor((joueur.y + joueur.h) / TILE);
+            let checkC = Math.floor((joueur.x + joueur.w/2) / TILE);
 
-            if (piedY >= 0 && piedY < LIGNES && centreX >= 0 && centreX < COLONNES) {
-                if (grille[piedY][centreX] !== 0) {
-                    joueur.y = (piedY * TAILLE_BLOC) - joueur.hauteur;
-                    joueur.velY = 0;
+            if (checkR >= 0 && checkR < ROWS && checkC >= 0 && checkC < COLS) {
+                if (map[checkR][checkC] !== 0) {
+                    joueur.y = (checkR * TILE) - joueur.h;
+                    joueur.vY = 0;
                     joueur.auSol = true;
                 }
             }
 
-            if ((touches["ArrowUp"] || touches["z"]) && joueur.auSol) {
-                joueur.velY = -8;
+            if ((touches["arrowup"] || touches["z"]) && joueur.auSol) {
+                joueur.vY = -7.5;
                 joueur.auSol = false;
             }
 
             if (joueur.x < 0) joueur.x = 0;
-            if (joueur.x > canvas.width - joueur.largeur) joueur.x = canvas.width - joueur.largeur;
+            if (joueur.x > canvas.width - joueur.w) joueur.x = canvas.width - joueur.w;
         }
 
-        function dessiner() {
+        function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            for (let y = 0; y < LIGNES; y++) {
-                for (let x = 0; x < COLONNES; x++) {
-                    ctx.fillStyle = COULEURS[grille[y][x]];
-                    ctx.fillRect(x * TAILLE_BLOC, y * TAILLE_BLOC, TAILLE_BLOC, TAILLE_BLOC);
-                    if (grille[y][x] !== 0) {
-                        ctx.strokeStyle = "rgba(0,0,0,0.05)";
-                        ctx.strokeRect(x * TAILLE_BLOC, y * TAILLE_BLOC, TAILLE_BLOC, TAILLE_BLOC);
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    ctx.fillStyle = BLOCS[map[y][x]];
+                    ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+                    if (map[y][x] !== 0) {
+                        ctx.strokeStyle = "rgba(0,0,0,0.1)";
+                        ctx.strokeRect(x * TILE, y * TILE, TILE, TILE);
                     }
                 }
             }
-
-            ctx.fillStyle = "#e67e22";
-            ctx.fillRect(joueur.x, joueur.y, joueur.largeur, joueur.hauteur);
-            ctx.fillStyle = "#16a085";
-            ctx.fillRect(joueur.x + 12, joueur.y + 4, 5, 5);
+            ctx.fillStyle = "#ff7675"; // Joueur
+            ctx.fillRect(joueur.x, joueur.y, joueur.w, joueur.h);
         }
 
-        function boucleJeu() {
-            mettreAJour();
-            dessiner();
-            requestAnimationFrame(boucleJeu);
-        }
+        function run() { update(); draw(); }
 
         if ('serviceWorker' in navigator) {
             const codeSW = 'self.addEventListener("fetch", (e) => {});';
