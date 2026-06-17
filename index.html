@@ -1,40 +1,75 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Jeu Installable</title>
-    
-    <!-- Le Manifest intégré pour activer le bouton installer -->
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Mon%20Super%20Jeu%22,%22short_name%22:%22Jeu%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23111%22,%22icons%22:[{%22src%22:%22data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='192' height='192'><rect width='192' height='192' rx='40' fill='%2300ff88'/><circle cx='96' cy='96' r='40' fill='black'/></svg>%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22},{%22src%22:%22data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='512' height='512'><rect width='512' height='512' rx='100' fill='%2300ff88'/><circle cx='256' cy='256' r='100' fill='black'/></svg>%22,%22sizes%22:%22512x512%22,%22type%22:%22image/svg+xml%22}]}">
+	<meta charset="UTF-8">
+	<title>Liberty Failor - Le Jeu</title>
+	<!-- Ton code obligatoire pour l'icône Chromebook -->
+	<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Devine%20Mon%20Age%22,%22short_name%22:%22Age%20Jeu%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23222%22,%22icons%22:[{%22src%22:%22data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='192' height='192'><rect width='192' height='192' rx='40' fill='%23ff9f43'/></svg>%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22}]}">
 
-    <style>
-        body { background: #111; color: #00ff88; font-family: monospace; text-align: center; padding-top: 100px; }
-        button { background: #00ff88; color: black; border: none; padding: 20px 40px; font-size: 22px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        button:active { transform: scale(0.95); }
-    </style>
+	<style>
+		body { background: #222; color: white; font-family: sans-serif; text-align: center; padding: 40px; }
+		article { background: #333; padding: 20px; border-radius: 10px; max-width: 600px; margin: 20px auto; text-align: left; }
+		button { background: #ff9f43; color: black; border: none; padding: 15px 30px; font-size: 20px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+	</style>
 </head>
 <body>
 
-    <h1>JEU DE CLIC</h1>
-    <h2 id="score">SCORE : 0</h2>
-    <button onclick="ajouter()">CLIQUER</button>
+	<header>
+		<h1>Liberty Failor</h1>
+	</header>
 
-    <script>
-        // Le code du jeu
-        let score = 0;
-        function ajouter() {
-            score++;
-            document.getElementById('score').innerText = "SCORE : " + score;
-        }
+	<article>
+		<p>
+			I graduated from the University of South Florida with a B.S. in Biomedical Science. I currently work as a Surgery Scheduler at Virginia Mason in the Gastroenterology department. So if you need a colonoscopy, I can totally schedule that for you. I don't really love my job, so I'm hoping to change careers.
+		</p>
+		<p>
+			In my free time, I play roller derby for the Rat City Rollergirls. I started playing roller derby three years ago and love it. I've had to play less now that I'm in school, so I'm ready for school to get over so I can resume playing with my team. I'm on the Throttle Rockets, which is one of four "home" teams. 
+		</p>
+	</article>
 
-        // Le script obligatoire pour forcer l'apparition du bouton installer
-        if ('serviceWorker' in navigator) {
-            const codeSW = 'self.addEventListener("fetch", (e) => {});';
-            const blob = new Blob([codeSW], { type: 'text/javascript' });
-            const urlSW = URL.createObjectURL(blob);
-            navigator.serviceWorker.register(urlSW);
-        }
-    </script>
+	<!-- Bouton pour lancer le jeu proprement -->
+	<button onclick="lancerLeJeu()">JOUER AU JEU DE L'ÂGE</button>
+
+	<footer>
+		<p style="margin-top: 40px; color: #888;">liberty.jayne@msn.com</p>
+	</footer>
+
+	<script>
+		function lancerLeJeu() {
+			// On choisit un âge au hasard entre 20 et 40 ans
+			let ageSecret = Math.floor(Math.random() * (40 - 20 + 1)) + 20;
+			let trouve = false;
+			let essais = 0;
+
+			while (trouve === false) {
+				let proposition = prompt("Devine mon âge ! (Il est entre 20 et 40 ans)");
+				
+				// Si le joueur clique sur Annuler
+				if (proposition === null) {
+					alert("Partie abandonnée.");
+					return; 
+				}
+
+				essais++;
+
+				if (proposition == ageSecret) {
+					alert("Bien joué ! Tu as trouvé en " + essais + " essais. L'âge était bien " + ageSecret + " ans !");
+					trouve = true;
+				} else if (proposition < ageSecret) {
+					alert("C'est PLUS GRAND ! Recommence.");
+				} else {
+					alert("C'est PLUS PETIT ! Recommence.");
+				}
+			}
+		}
+
+		// Script obligatoire pour Chrome OS
+		if ('serviceWorker' in navigator) {
+			const codeSW = 'self.addEventListener("fetch", (e) => {});';
+			const blob = new Blob([codeSW], { type: 'text/javascript' });
+			const urlSW = URL.createObjectURL(blob);
+			navigator.serviceWorker.register(urlSW);
+		}
+	</script>
 </body>
 </html>
